@@ -1,0 +1,34 @@
+# C1 Configuration
+# Copy this file and fill in your values
+# Or use .env for sensitive keys (see .env.example)
+
+db_path: data/leads.db
+
+# --- Target ---
+default_niche: "SaaS"
+target_titles:
+  - CEO
+  - Founder
+  - Head of Marketing
+  - CMO
+  - Co-Founder
+target_location: "Poland"
+
+# --- Qualification ---
+min_qualification_score: 40  # 0–100
+
+# --- Outreach ---
+outreach_delay_seconds: 8    # seconds between emails (avoid spam filters)
+
+# --- Scraping ---
+scrape_delay:
+  - 1.5
+  - 4.0
+
+# --- LinkedIn provider ---
+# Options: mock | proxycurl | apollo
+linkedin_provider: mock
+
+# --- SMTP ---
+smtp_host: smtp.gmail.com
+smtp_port: 587
