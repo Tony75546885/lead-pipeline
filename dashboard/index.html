@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Strategii Tradingowych</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-deepest: #0a0e17;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --border: #1e293b;
+            --accent-green: #00d4aa;
+            --accent-red: #ff4757;
+            --accent-amber: #ffa502;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-cyan: #06b6d4;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-deepest);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deepest); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 0;
+            background: linear-gradient(180deg, rgba(17, 24, 39, 0.8) 0%, transparent 100%);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(0, 212, 170, 0); }
+        }
+
+        .clock {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Summary Stats */
+        .summary-section {
+            padding: 32px 0 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-green);
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-card .trend {
+            font-size: 0.75rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend-up { color: var(--accent-green); }
+        .trend-down { color: var(--accent-red); }
+
+        /* Strategies Grid */
+        .strategies-section {
+            padding: 16px 0;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 20px;
+            background: var(--accent-green);
+            border-radius: 2px;
+        }
+
+        .strategies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+
+        .strategy-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(0, 212, 170, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .strategy-icon {
+            font-size: 1.8rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .strategy-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .strategy-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active {
+            background: rgba(0, 212, 170, 0.15);
+            color: var(--accent-green);
+        }
+
+        .status-paused {
+            background: rgba(255, 165, 2, 0.15);
+            color: var(--accent-amber);
+        }
+
+        .status-backtesting {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .card-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .risk-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 14px;
+        }
+
+        .risk-segment {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .risk-low .risk-segment:nth-child(1) { background: var(--accent-green); }
+        .risk-medium .risk-segment:nth-child(1),
+        .risk-medium .risk-segment:nth-child(2) { background: var(--accent-amber); }
+        .risk-high .risk-segment:nth-child(1),
+        .risk-high .risk-segment:nth-child(2),
+        .risk-high .risk-segment:nth-child(3) { background: var(--accent-red); }
+
+        .risk-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .mini-chart-container {
+            height: 70px;
+            position: relative;
+        }
+
+        /* Main Chart */
+        .chart-section {
+            padding: 16px 0;
+        }
+
+        .chart-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .chart-container {
+            height: 350px;
+            position: relative;
+        }
+
+        /* Trades Table */
+        .trades-section {
+            padding: 16px 0 40px;
+        }
+
+        .table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+            white-space: nowrap;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .trade-long { color: var(--accent-green); font-weight: 600; }
+        .trade-short { color: var(--accent-red); font-weight: 600; }
+        .pnl-positive { color: var(--accent-green); font-weight: 600; }
+        .pnl-negative { color: var(--accent-red); font-weight: 600; }
+
+        .status-closed {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-muted);
+        }
+
+        .status-open {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(0, 212, 170, 0.15);
+            color: var(--accent-green);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .strategies-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .strategies-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .stat-card .value {
+                font-size: 1.4rem;
+            }
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 12px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .card-metrics { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        }
+
+        /* Card entry animation */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container header-content">
+        <div class="header-left">
+            <h1>Panel Strategii Tradingowych</h1>
+            <p>Zarządzanie i monitorowanie aktywnych strategii</p>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                System online
+            </div>
+            <div class="clock" id="clock"></div>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <!-- Summary Stats -->
+    <section class="summary-section">
+        <div class="stats-grid" id="stats-grid"></div>
+    </section>
+
+    <!-- Strategy Cards -->
+    <section class="strategies-section">
+        <h2 class="section-title">Strategie</h2>
+        <div class="strategies-grid" id="strategies-grid"></div>
+    </section>
+
+    <!-- Performance Chart -->
+    <section class="chart-section">
+        <h2 class="section-title">Wyniki strategii (ostatnie 12 miesięcy)</h2>
+        <div class="chart-panel">
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Trades -->
+    <section class="trades-section">
+        <h2 class="section-title">Ostatnie transakcje</h2>
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Strategia</th>
+                            <th>Instrument</th>
+                            <th>Typ</th>
+                            <th>Cena wejścia</th>
+                            <th>Cena wyjścia</th>
+                            <th>P&L</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trades-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container">
+        Panel Strategii Tradingowych v2.0 &mdash; Dane demo &mdash; Ostatnia aktualizacja: <span id="footer-date"></span>
+    </div>
+</footer>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────
+function generatePerformanceData(points, base, volatility, trend) {
+    const data = [];
+    let value = base;
+    for (let i = 0; i < points; i++) {
+        value += (Math.random() - 0.45) * volatility + trend;
+        data.push(Math.round(value * 100) / 100);
+    }
+    return data;
+}
+
+const strategies = [
+    {
+        id: 'forex-2',
+        name: 'Forex 2.0',
+        description: 'Pary walutowe — EUR/USD, GBP/USD, USD/JPY',
+        icon: '💱',
+        winRate: 72.5,
+        totalPnL: 15420.50,
+        totalTrades: 342,
+        status: 'active',
+        riskLevel: 'medium',
+        color: '#00d4aa',
+        performance: generatePerformanceData(30, 100, 3, 0.8),
+        monthly: generatePerformanceData(12, 1000, 400, 120)
+    },
+    {
+        id: 'crypto-momentum',
+        name: 'Crypto Momentum',
+        description: 'Trend following — BTC, ETH, SOL',
+        icon: '₿',
+        winRate: 65.3,
+        totalPnL: 28750.00,
+        totalTrades: 189,
+        status: 'active',
+        riskLevel: 'high',
+        color: '#f59e0b',
+        performance: generatePerformanceData(30, 100, 6, 1.2),
+        monthly: generatePerformanceData(12, 2000, 800, 200)
+    },
+    {
+        id: 'stock-scalper',
+        name: 'Stock Scalper',
+        description: 'Szybkie pozycje — AAPL, TSLA, NVDA',
+        icon: '📈',
+        winRate: 78.1,
+        totalPnL: 8920.00,
+        totalTrades: 1247,
+        status: 'active',
+        riskLevel: 'low',
+        color: '#3b82f6',
+        performance: generatePerformanceData(30, 100, 1.5, 0.5),
+        monthly: generatePerformanceData(12, 500, 200, 70)
+    },
+    {
+        id: 'commodities-swing',
+        name: 'Commodities Swing',
+        description: 'Swing trading — złoto, ropa, gaz',
+        icon: '🛢️',
+        winRate: 61.8,
+        totalPnL: -2340.00,
+        totalTrades: 87,
+        status: 'paused',
+        riskLevel: 'medium',
+        color: '#ef4444',
+        performance: generatePerformanceData(30, 100, 4, -0.3),
+        monthly: generatePerformanceData(12, 0, 500, -20)
+    },
+    {
+        id: 'index-futures',
+        name: 'Index Futures',
+        description: 'Kontrakty terminowe — S&P 500, DAX, NASDAQ',
+        icon: '📊',
+        winRate: 69.4,
+        totalPnL: 12100.00,
+        totalTrades: 156,
+        status: 'active',
+        riskLevel: 'medium',
+        color: '#a855f7',
+        performance: generatePerformanceData(30, 100, 2.5, 0.6),
+        monthly: generatePerformanceData(12, 800, 350, 90)
+    },
+    {
+        id: 'options-flow',
+        name: 'Options Flow',
+        description: 'Analiza przepływu opcji — SPY, QQQ, IWM',
+        icon: '🔄',
+        winRate: 58.2,
+        totalPnL: 4680.00,
+        totalTrades: 94,
+        status: 'backtesting',
+        riskLevel: 'high',
+        color: '#06b6d4',
+        performance: generatePerformanceData(30, 100, 5, 0.4),
+        monthly: generatePerformanceData(12, 300, 300, 40)
+    }
+];
+
+const recentTrades = [
+    { date: '2026-06-18 14:32', strategy: 'Forex 2.0', instrument: 'EUR/USD', type: 'LONG', entry: 1.0852, exit: 1.0891, pnl: 234.50, status: 'zamknięta' },
+    { date: '2026-06-18 13:15', strategy: 'Crypto Momentum', instrument: 'BTC/USDT', type: 'LONG', entry: 71250.00, exit: 72100.00, pnl: 850.00, status: 'zamknięta' },
+    { date: '2026-06-18 12:44', strategy: 'Stock Scalper', instrument: 'NVDA', type: 'SHORT', entry: 142.30, exit: 141.85, pnl: 112.50, status: 'zamknięta' },
+    { date: '2026-06-18 11:20', strategy: 'Index Futures', instrument: 'ES (S&P 500)', type: 'LONG', entry: 5520.25, exit: 5535.50, pnl: 762.50, status: 'zamknięta' },
+    { date: '2026-06-18 10:55', strategy: 'Forex 2.0', instrument: 'GBP/USD', type: 'SHORT', entry: 1.2715, exit: 1.2680, pnl: 175.00, status: 'zamknięta' },
+    { date: '2026-06-18 10:12', strategy: 'Crypto Momentum', instrument: 'ETH/USDT', type: 'LONG', entry: 3850.00, exit: null, pnl: 125.00, status: 'otwarta' },
+    { date: '2026-06-18 09:30', strategy: 'Stock Scalper', instrument: 'AAPL', type: 'LONG', entry: 198.45, exit: 199.20, pnl: 75.00, status: 'zamknięta' },
+    { date: '2026-06-17 16:45', strategy: 'Options Flow', instrument: 'SPY 550C', type: 'LONG', entry: 3.25, exit: 4.10, pnl: 425.00, status: 'zamknięta' },
+    { date: '2026-06-17 15:30', strategy: 'Index Futures', instrument: 'NQ (NASDAQ)', type: 'SHORT', entry: 19850.00, exit: 19920.00, pnl: -350.00, status: 'zamknięta' },
+    { date: '2026-06-17 14:10', strategy: 'Forex 2.0', instrument: 'USD/JPY', type: 'LONG', entry: 157.25, exit: 157.65, pnl: 253.00, status: 'zamknięta' },
+    { date: '2026-06-17 12:00', strategy: 'Stock Scalper', instrument: 'TSLA', type: 'LONG', entry: 265.80, exit: 264.90, pnl: -90.00, status: 'zamknięta' },
+    { date: '2026-06-17 10:20', strategy: 'Commodities Swing', instrument: 'Złoto (XAU)', type: 'LONG', entry: 2345.50, exit: 2338.00, pnl: -375.00, status: 'zamknięta' },
+    { date: '2026-06-16 15:45', strategy: 'Crypto Momentum', instrument: 'SOL/USDT', type: 'LONG', entry: 168.50, exit: 175.20, pnl: 670.00, status: 'zamknięta' },
+    { date: '2026-06-16 11:30', strategy: 'Forex 2.0', instrument: 'EUR/GBP', type: 'SHORT', entry: 0.8542, exit: 0.8510, pnl: 192.00, status: 'zamknięta' },
+];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────
+function formatCurrency(value) {
+    const sign = value >= 0 ? '+' : '';
+    return sign + '$' + Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function getStatusInfo(status) {
+    const map = {
+        active: { label: 'Aktywna', class: 'status-active' },
+        paused: { label: 'Wstrzymana', class: 'status-paused' },
+        backtesting: { label: 'Backtesting', class: 'status-backtesting' }
+    };
+    return map[status];
+}
+
+function getRiskLabel(risk) {
+    const map = { low: 'Niski', medium: 'Średni', high: 'Wysoki' };
+    return map[risk];
+}
+
+// ─── RENDER SUMMARY ──────────────────────────────────────────────────
+function renderSummary() {
+    const totalPnL = strategies.reduce((s, st) => s + st.totalPnL, 0);
+    const totalTrades = strategies.reduce((s, st) => s + st.totalTrades, 0);
+    const avgWinRate = strategies.reduce((s, st) => s + st.winRate, 0) / strategies.length;
+    const activeCount = strategies.filter(s => s.status === 'active').length;
+
+    const stats = [
+        { label: 'Całkowity P&L', value: formatCurrency(totalPnL), color: totalPnL >= 0 ? 'var(--accent-green)' : 'var(--accent-red)', trend: '+12.4%', trendDir: 'up' },
+        { label: 'Liczba transakcji', value: totalTrades.toLocaleString(), color: 'var(--text-primary)', trend: '+38 ten tydzień', trendDir: 'up' },
+        { label: 'Średni Win Rate', value: avgWinRate.toFixed(1) + '%', color: 'var(--accent-green)', trend: '+2.1% vs ubiegły m-c', trendDir: 'up' },
+        { label: 'Aktywne strategie', value: activeCount + '/' + strategies.length, color: 'var(--accent-blue)', trend: activeCount + ' aktywne', trendDir: 'up' }
+    ];
+
+    const grid = document.getElementById('stats-grid');
+    grid.innerHTML = stats.map((s, i) => `
+        <div class="stat-card animate-in" style="animation-delay: ${i * 0.1}s">
+            <div class="label">${s.label}</div>
+            <div class="value" style="color: ${s.color}">${s.value}</div>
+            <div class="trend trend-${s.trendDir}">
+                ${s.trendDir === 'up' ? '▲' : '▼'} ${s.trend}
+            </div>
+        </div>
+    `).join('');
+}
+
+// ─── RENDER STRATEGY CARDS ───────────────────────────────────────────
+function renderStrategies() {
+    const grid = document.getElementById('strategies-grid');
+    grid.innerHTML = strategies.map((s, i) => {
+        const statusInfo = getStatusInfo(s.status);
+        const pnlColor = s.totalPnL >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+        return `
+        <div class="strategy-card animate-in" style="animation-delay: ${(i + 4) * 0.08}s">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="strategy-icon">${s.icon}</div>
+                    <div>
+                        <div class="strategy-name">${s.name}</div>
+                        <div class="strategy-desc">${s.description}</div>
+                    </div>
+                </div>
+                <span class="status-badge ${statusInfo.class}">${statusInfo.label}</span>
+            </div>
+            <div class="card-metrics">
+                <div class="metric">
+                    <div class="metric-label">Skuteczność</div>
+                    <div class="metric-value" style="color: var(--accent-green)">${s.winRate}%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Zysk/Strata</div>
+                    <div class="metric-value" style="color: ${pnlColor}">${formatCurrency(s.totalPnL)}</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Transakcje</div>
+                    <div class="metric-value">${s.totalTrades.toLocaleString()}</div>
+                </div>
+            </div>
+            <div class="risk-label">Ryzyko: ${getRiskLabel(s.riskLevel)}</div>
+            <div class="risk-bar risk-${s.riskLevel}">
+                <div class="risk-segment"></div>
+                <div class="risk-segment"></div>
+                <div class="risk-segment"></div>
+            </div>
+            <div class="mini-chart-container">
+                <canvas id="chart-${s.id}"></canvas>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ─── RENDER TRADES TABLE ─────────────────────────────────────────────
+function renderTrades() {
+    const tbody = document.getElementById('trades-body');
+    tbody.innerHTML = recentTrades.map(t => {
+        const typeClass = t.type === 'LONG' ? 'trade-long' : 'trade-short';
+        const pnlClass = t.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+        const statusClass = t.status === 'otwarta' ? 'status-open' : 'status-closed';
+        const exitDisplay = t.exit !== null ? t.exit.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '—';
+        return `
+        <tr>
+            <td style="color: var(--text-secondary)">${t.date}</td>
+            <td>${t.strategy}</td>
+            <td style="font-weight: 600">${t.instrument}</td>
+            <td class="${typeClass}">${t.type}</td>
+            <td>${t.entry.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+            <td>${exitDisplay}</td>
+            <td class="${pnlClass}">${formatCurrency(t.pnl)}</td>
+            <td><span class="${statusClass}">${t.status}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+// ─── MINI CHARTS ─────────────────────────────────────────────────────
+function initMiniCharts() {
+    strategies.forEach(s => {
+        const canvas = document.getElementById('chart-' + s.id);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 70);
+        gradient.addColorStop(0, s.totalPnL >= 0 ? 'rgba(0, 212, 170, 0.3)' : 'rgba(255, 71, 87, 0.3)');
+        gradient.addColorStop(1, 'transparent');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: s.performance.map((_, i) => i),
+                datasets: [{
+                    data: s.performance,
+                    borderColor: s.color,
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHitRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                interaction: { mode: 'none' }
+            }
+        });
+    });
+}
+
+// ─── MAIN CHART ──────────────────────────────────────────────────────
+function initMainChart() {
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+
+    const datasets = strategies.map(s => ({
+        label: s.name,
+        data: s.monthly,
+        borderColor: s.color,
+        backgroundColor: s.color + '20',
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: s.color,
+        fill: false
+    }));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: { labels: months, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#94a3b8',
+                        font: { family: 'Inter', size: 12 },
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#94a3b8',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 12,
+                    titleFont: { family: 'Inter', weight: '600' },
+                    bodyFont: { family: 'Inter' },
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(30, 41, 59, 0.5)' },
+                    ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } }
+                },
+                y: {
+                    grid: { color: 'rgba(30, 41, 59, 0.5)' },
+                    ticks: {
+                        color: '#64748b',
+                        font: { family: 'Inter', size: 11 },
+                        callback: function(value) { return '$' + value.toLocaleString(); }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ─── CLOCK ───────────────────────────────────────────────────────────
+function updateClock() {
+    const now = new Date();
+    const opts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    document.getElementById('clock').textContent = now.toLocaleDateString('pl-PL') + '  ' + now.toLocaleTimeString('pl-PL', opts);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    renderSummary();
+    renderStrategies();
+    renderTrades();
+    initMiniCharts();
+    initMainChart();
+    updateClock();
+    setInterval(updateClock, 1000);
+    document.getElementById('footer-date').textContent = new Date().toLocaleDateString('pl-PL');
+});
+</script>
+
+</body>
+</html>
