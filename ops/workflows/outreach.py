@@ -1,9 +1,12 @@
 """
 Outreach & Follow-up Workflow — Notion CRM → Message Gen → Gmail → CRM Update
 
-Claude generuje spersonalizowane cold emails i follow-upy,
-tworzy drafty w Gmail, i aktualizuje status w Notion CRM.
+Maps to real Notion CRM:
+- Pipeline: collection://7b716879-9481-42a1-835e-9ebb8d893ace
+- Outreach: collection://31677235-f40e-4e24-8e82-147e44b8503e
 """
+
+from .lead_gen import NOTION_IDS
 
 WORKFLOW = {
     "name": "Outreach & Follow-up",
@@ -12,56 +15,66 @@ WORKFLOW = {
             "step": 1,
             "name": "Pobierz leady do kontaktu",
             "mcp_tool": "mcp__notion__search",
-            "logic": "Szukaj w CRM leadów z status='qualified' (do cold outreach) "
-                     "i status='contacted' z last_contact > 3 dni (do follow-up)",
+            "logic": """
+                Z Pipeline:
+                - Cold outreach: Etap='New' lub 'Qualifying', Score >= 40
+                - Follow-up: Etap='Contacted', Data kontaktu > 3 dni temu
+            """,
         },
         {
             "step": 2,
             "name": "Wygeneruj wiadomości",
             "logic": """
                 Dla każdego leada:
-                1. Sprawdź lokalizację → PL = po polsku, inne = po angielsku
-                2. Użyj danych z enrichmentu do personalizacji
-                3. Cold email: max 5 zdań, konkretne CTA
-                4. Follow-up: max 3 zdania, nawiąż do poprzedniej wiadomości
-                5. Dodaj nową wartość w follow-upie (case study, statystyka)
+                1. Sprawdź Lokalizacja → PL = po polsku, inne = po angielsku
+                2. Użyj danych z Pipeline (Firma, Stanowisko, Nisza) do personalizacji
+                3. Cold: max 5 zdań, konkretne CTA
+                4. Follow-up: max 3 zdania, nawiąż do poprzedniego maila
             """,
         },
         {
             "step": 3,
             "name": "Stwórz drafty w Gmail",
             "mcp_tool": "mcp__gmail__create_draft",
-            "notes": """
-                Stwórz draft (NIE wysyłaj od razu) dla każdego leada.
-                Użytkownik musi zatwierdzić drafty przed wysłaniem.
-
-                Format:
-                - To: {lead.email}
-                - Subject: spersonalizowany temat
-                - Body: wygenerowana wiadomość + footer z unsubscribe
-            """,
+            "notes": "Stwórz DRAFT, NIE wysyłaj. Użytkownik zatwierdza.",
         },
         {
             "step": 4,
-            "name": "Czekaj na zatwierdzenie",
-            "logic": "Pokaż użytkownikowi listę draftów. Czekaj na 'ok'/'wyślij'/'popraw X'",
+            "name": "Zapisz w Outreach",
+            "mcp_tool": "mcp__notion__create_pages",
+            "params_mapping": {
+                "database_id": NOTION_IDS["outreach_db"],
+                "properties": {
+                    "Temat": "{subject}",
+                    "Kontakt": "{lead_name}",
+                    "Firma": "{company}",
+                    "Tresc": "{email_body}",
+                    "Typ": "Cold outreach | Follow-up 1 | Follow-up 2 | Follow-up 3",
+                    "Status": "Zaplanowany",
+                    "Kanal": "Email",
+                    "Data wysylki": "{today}",
+                },
+            },
         },
         {
             "step": 5,
-            "name": "Zaktualizuj CRM",
-            "mcp_tool": "mcp__notion__update_page",
-            "notes": """
-                Po wysłaniu:
-                - Status → 'contacted' (cold) lub zostawić 'contacted' (follow-up)
-                - Last Contact → dzisiaj
-                - Next Follow-up → za 3 dni (cold) lub za 7 dni (follow-up)
-                - Notes → dodaj "Cold email sent" lub "Follow-up #N sent"
-            """,
+            "name": "Po zatwierdzeniu — update CRM",
+            "updates": {
+                "pipeline": {
+                    "Etap": "Contacted",
+                    "Data kontaktu": "{today}",
+                    "Data followup": "{today + 3 days}",
+                    "Nastepny krok": "Czekaj na odpowiedź, follow-up za 3 dni",
+                },
+                "outreach": {
+                    "Status": "Wyslany",
+                },
+            },
         },
     ],
 }
 
-COLD_EMAIL_PROMPT_PL = """Napisz cold email B2B po polsku.
+COLD_EMAIL_PROMPT_PL = """Napisz cold email B2B po polsku dla firmy IT/Software.
 
 Lead:
 - Imię: {name}
@@ -71,9 +84,6 @@ Lead:
 - Strona: {website}
 - Technologie: {technologies}
 - Wielkość firmy: {company_size}
-
-Nadawca: {sender_name} z {sender_company}
-Propozycja wartości: {value_proposition}
 
 Zasady:
 - Max 5 zdań
@@ -89,7 +99,7 @@ TEMAT: <temat>
 <treść>
 """
 
-COLD_EMAIL_PROMPT_EN = """Write a B2B cold email in English.
+COLD_EMAIL_PROMPT_EN = """Write a B2B cold email in English for an IT/Software company.
 
 Lead:
 - Name: {name}
@@ -99,9 +109,6 @@ Lead:
 - Website: {website}
 - Technologies: {technologies}
 - Company size: {company_size}
-
-Sender: {sender_name} from {sender_company}
-Value proposition: {value_proposition}
 
 Rules:
 - Max 5 sentences
@@ -117,29 +124,14 @@ SUBJECT: <subject>
 <body>
 """
 
-FOLLOW_UP_PROMPT_PL = """Napisz follow-up do cold emaila po polsku.
-
-Kontekst poprzedniej wiadomości:
-{previous_email_summary}
-
-Lead: {name}, {title} w {company}
-Dni od ostatniego kontaktu: {days_since}
-Numer follow-upu: {follow_up_number}/2
-
-Zasady:
-- Max 3 zdania
-- Nawiąż do poprzedniej wiadomości (nie powtarzaj jej)
-- Dodaj nową wartość (statystyka, case study, insight)
-- Lekkie CTA
-- Jeśli to follow-up #2, bądź bardziej bezpośredni
-
-Format:
-TEMAT: Re: <oryginalny temat>
-
-<treść>
-"""
-
-MAX_FOLLOW_UPS = 2
-FOLLOW_UP_INTERVALS_DAYS = [3, 7]
-DAILY_EMAIL_LIMIT = 50
-DELAY_BETWEEN_EMAILS_SEC = 8
+FOLLOW_UP_RULES = {
+    "max_follow_ups": 3,
+    "intervals_days": [3, 5, 7],
+    "daily_email_limit": 50,
+    "delay_between_emails_sec": 8,
+    "notion_typ_mapping": {
+        1: "Follow-up 1",
+        2: "Follow-up 2",
+        3: "Follow-up 3",
+    },
+}

@@ -2,119 +2,200 @@
 
 ## Misja
 
-System C1 automatycznie pozyskuje klientów B2B i zarządza operacjami biznesowymi.
+System C1 automatycznie pozyskuje klientów B2B dla firmy oferującej usługi IT/Software.
 Claude pełni rolę **AI Business Operator** — prowadzi pipeline sprzedażowy,
 zarządza komunikacją, tworzy materiały marketingowe i raportuje wyniki.
 
 ---
 
+## Notion CRM — dokładna struktura (production)
+
+### Pipeline (`collection://7b716879-9481-42a1-835e-9ebb8d893ace`)
+
+Hub CRM: `https://app.notion.com/p/3726487675b5817998bbffb606ecaf5d`
+
+| Property         | Type     | Opcje                                                               |
+|------------------|----------|---------------------------------------------------------------------|
+| Lead             | title    | Imię i nazwisko leada                                               |
+| Email            | email    |                                                                     |
+| Firma            | text     |                                                                     |
+| Stanowisko       | text     |                                                                     |
+| Etap             | select   | New, Qualifying, Contacted, Replied, Meeting, Negotiation, Won, Lost|
+| Score            | number   | 0–100                                                               |
+| Nisza            | select   | SaaS, Ecommerce, Agencja, B2B, Fintech, Inne                       |
+| Zrodlo           | select   | LinkedIn, Scraper, Apollo, Polecenie, Inne                          |
+| Priorytet        | select   | Wysoki, Sredni, Niski                                               |
+| Data kontaktu    | date     | Kiedy pierwszy kontakt                                              |
+| Data followup    | date     | Kiedy follow-up                                                     |
+| Nastepny krok    | text     | Co dalej z leadem                                                   |
+| Notatki          | text     |                                                                     |
+| Wartosc          | number   | Wartość deala ($)                                                    |
+| Dodano           | created  | Auto                                                                |
+
+### Kontakty (`collection://41489d85-cc78-498a-affa-cea4450166a0`)
+
+| Property        | Type     | Opcje                                      |
+|-----------------|----------|--------------------------------------------|
+| Imie Nazwisko   | title    |                                             |
+| Email           | email    |                                             |
+| Firma           | text     |                                             |
+| Stanowisko      | text     |                                             |
+| Status          | select   | Lead, Qualified, Klient, Churned           |
+| Score           | number   | 0–100                                       |
+| Nisza           | select   | SaaS, Ecommerce, Agencja, B2B, Fintech, Inne|
+| Zrodlo          | select   | LinkedIn, Scraper, Apollo, Polecenie, Inne  |
+| LinkedIn        | url      |                                             |
+| Lokalizacja     | text     |                                             |
+| Telefon         | phone    |                                             |
+| Notatki         | text     |                                             |
+
+### Outreach (`collection://31677235-f40e-4e24-8e82-147e44b8503e`)
+
+| Property        | Type     | Opcje                                                              |
+|-----------------|----------|--------------------------------------------------------------------|
+| Temat           | title    | Temat wiadomości                                                   |
+| Kontakt         | text     | Imię osoby                                                        |
+| Firma           | text     |                                                                    |
+| Tresc           | text     | Treść wiadomości                                                   |
+| Typ             | select   | Cold outreach, Follow-up 1, Follow-up 2, Follow-up 3, Odpowiedz   |
+| Status          | select   | Zaplanowany, Wyslany, Otwarty, Kliknieto, Odpisano, Bounce, Unsubscribed |
+| Kanal           | select   | Email, LinkedIn, Telefon, WhatsApp, Inne                           |
+| Data wysylki    | date     |                                                                    |
+| Notatki         | text     |                                                                    |
+
+### Widoki Notion
+
+- **Kanban** (Pipeline) — leady grupowane po Etap
+- **Follow-upy** (Calendar) — kalendarz follow-upów po Data followup
+- **Hot Leads** — filtr: Priorytet = Wysoki
+- **Won** — filtr: Etap = Won
+- **Status outreach** (Outreach) — kanban po Status wiadomości
+
+---
+
 ## Podpięte narzędzia (MCP)
 
-| Narzędzie       | Rola w biznesie                                    |
-|-----------------|---------------------------------------------------|
-| **Apollo**      | Szukanie leadów, enrichment, sekwencje outreach    |
-| **Gmail**       | Odbieranie/wysyłanie maili, follow-upy             |
-| **Notion**      | CRM, baza wiedzy, notatki ze spotkań, task board   |
-| **Calendar**    | Planowanie spotkań, bloki fokusowe                 |
-| **Zoom**        | Nagrania spotkań, transkrypcje                     |
-| **Google Drive** | Dokumenty, propozycje, raporty                    |
-| **Figma**       | Projekty UI/UX, makiety dla klientów               |
-| **Canva**       | Grafiki social media, prezentacje, PDF-y           |
-| **Wix**         | Zarządzanie stroną www, landing pages              |
-| **Bigdata.com** | Wywiad rynkowy, analiza firm targetowych           |
+| Narzędzie        | Rola w biznesie                                   | Status   |
+|------------------|---------------------------------------------------|----------|
+| **Apollo**       | Szukanie leadów, enrichment, sekwencje outreach   | Active   |
+| **Gmail**        | Odbieranie/wysyłanie maili, follow-upy            | Active   |
+| **Notion**       | CRM, baza wiedzy, outreach tracking               | Active   |
+| **Calendar**     | Planowanie spotkań, bloki fokusowe                | Active   |
+| **Zoom**         | Nagrania spotkań, transkrypcje                    | Active   |
+| **Google Drive** | Dokumenty, propozycje, raporty                    | Active   |
+| **Figma**        | Projekty UI/UX, makiety dla klientów              | Active   |
+| **Canva**        | Grafiki social media, prezentacje, PDF-y          | Active   |
+| **Wix**          | Strony www: Botbridge, Foundry AI                 | Active   |
+| **Bigdata.com**  | Wywiad rynkowy, analiza firm targetowych          | Active   |
 
 ---
 
 ## Codzienne operacje (Daily Ops)
 
-Claude powinien wykonać następujące zadania w każdej sesji:
+### KROK 1: Przegląd Gmail
+```
+Tool: mcp__gmail__search_threads (query: "is:unread newer_than:1d")
+→ Klasyfikuj: lead reply / zapytanie / meeting request / spam
+→ Zaktualizuj Notion CRM odpowiednio
+```
 
-### 1. Poranny przegląd (Morning Review)
-- Sprawdź nowe maile w Gmail → wyciągnij leady, odpowiedzi, pytania klientów
-- Sprawdź kalendarz na dziś → przygotuj briefy na spotkania
-- Sprawdź Notion CRM → jakie follow-upy są na dziś
+### KROK 2: Przegląd kalendarza
+```
+Tool: mcp__calendar__list_events (dziś)
+→ Dla każdego spotkania: sprawdź lead w CRM, przygotuj brief
+```
 
-### 2. Lead Generation
-- Szukaj nowych leadów przez Apollo (szukaj po niche z config.yaml)
-- Enrichuj leady danymi firmowymi (Bigdata.com + Apollo enrichment)
-- Scoruj leady i dodaj zakwalifikowane do Notion CRM
-- Uruchom sekwencję outreach dla nowych kwalifikowanych leadów
+### KROK 3: Pipeline review
+```
+Tool: mcp__notion__search → Pipeline
+→ Policz leady na każdym etapie
+→ Znajdź: Contacted > 3 dni bez odpowiedzi → follow-up
+→ Znajdź: Replied bez akcji > 2 dni → alert
+→ Znajdź: Qualified bez kontaktu → ready for outreach
+```
 
-### 3. Outreach & Follow-up
-- Wyślij spersonalizowane cold emails (Gmail) do nowych leadów
-- Wyślij follow-upy do leadów bez odpowiedzi (po 3 i 7 dniach)
-- Odpowiedz na pozytywne odpowiedzi — zaproponuj spotkanie (Calendar)
+### KROK 4: Lead Generation (jeśli pipeline < 50 active)
+```
+Tool: mcp__apollo__mixed_people_api_search
+→ Szukaj CEO/Founder/CTO w target niche
+→ Enrich: mcp__apollo__organizations_enrich
+→ Score (business email +15, C-suite +20, size 10-200 +15)
+→ Dodaj do Pipeline (Etap: New) + Kontakty
+```
 
-### 4. Content & Marketing
-- Stwórz posty social media (Canva) na podstawie case studies
-- Aktualizuj stronę www (Wix) jeśli potrzeba
-- Przygotuj materiały sprzedażowe (Google Drive)
+### KROK 5: Outreach
+```
+Pobierz leady z Etap = Qualifying/New z Score >= 40
+→ Wygeneruj spersonalizowane cold emails
+→ Stwórz draft w Gmail: mcp__gmail__create_draft
+→ Zapisz w Outreach (Typ: Cold outreach, Status: Zaplanowany)
+→ Po zatwierdzeniu → wyślij, Status → Wyslany, Etap → Contacted
+```
 
-### 5. Raportowanie
-- Zaktualizuj dashboard w Notion z wynikami dnia
-- Wygeneruj raport: ile leadów, ile wysłanych maili, ile odpowiedzi, ile spotkań
+### KROK 6: Follow-upy
+```
+Pipeline: Etap = Contacted, Data kontaktu > 3 dni
+→ Sprawdź Gmail thread
+→ Jeśli brak odpowiedzi → follow-up (max 3)
+→ Zapisz w Outreach (Typ: Follow-up 1/2/3)
+```
+
+### KROK 7: Raport
+```
+Podsumowanie → wypisz + zapisz w Notion
+```
 
 ---
 
-## Workflow: Nowy Lead → Klient
+## Workflow: Lead → Klient (mapowanie na Notion)
 
 ```
-Apollo Search → Enrichment (Bigdata) → Scoring → Notion CRM
-    ↓
-Qualified? → Personalized Email (Gmail) → Tracking
-    ↓
-Reply? → Calendar Meeting → Zoom Call → Notatki (Notion)
-    ↓
-Interested? → Propozycja (Google Drive) → Follow-up → Converted ✓
+Apollo Search
+  ↓
+Pipeline: Etap=New, Kontakty: Status=Lead
+  ↓
+Scoring → Score >= 40?
+  ↓ TAK
+Pipeline: Etap=Qualifying → Cold Email → Etap=Contacted
+  ↓
+Outreach: Typ=Cold outreach, Status=Wyslany
+  ↓
+Reply? → Pipeline: Etap=Replied → Schedule meeting
+  ↓
+Calendar event → Pipeline: Etap=Meeting
+  ↓
+Proposal → Pipeline: Etap=Negotiation
+  ↓
+Won/Lost → Kontakty: Status=Klient/Churned
 ```
 
 ---
 
-## Komendy operacyjne
+## Komendy
 
-Kiedy użytkownik powie:
-
-- **"pokaż pipeline"** → Pokaż stan CRM z Notion, ile leadów na jakim etapie
-- **"szukaj leadów [niche]"** → Uruchom Apollo search + enrichment + scoring
-- **"wyślij outreach"** → Wygeneruj i wyślij maile do zakwalifikowanych leadów
-- **"przygotuj raport"** → Zbierz dane z wszystkich narzędzi, pokaż KPI
-- **"sprawdź maile"** → Przejrzyj Gmail, wyciągnij odpowiedzi leadów
-- **"zaplanuj spotkanie z [lead]"** → Utwórz event w Calendar
-- **"przygotuj materiały dla [firma]"** → Stwórz propozycję w Google Drive
-- **"zaktualizuj stronę"** → Modyfikuj Wix landing page
-- **"codzienny przegląd"** → Wykonaj pełny Morning Review
+| Komenda                          | Akcja                                               |
+|----------------------------------|-----------------------------------------------------|
+| `codzienny przegląd`             | Pełny KROK 1-7                                      |
+| `sprawdź maile`                  | KROK 1                                              |
+| `pokaż pipeline`                | KROK 3                                              |
+| `szukaj leadów [niche]`          | KROK 4                                              |
+| `wyślij outreach`               | KROK 5                                              |
+| `follow-upy`                    | KROK 6                                              |
+| `raport`                        | KROK 7                                              |
+| `zaplanuj spotkanie z [X]`       | Calendar + Gmail + Pipeline update                  |
+| `przygotuj się na spotkanie`     | Bigdata research + CRM history + brief              |
+| `sprawdź firmę [X]`             | Bigdata tearsheet + Apollo enrich + brief            |
+| `stwórz propozycję dla [X]`     | Google Drive doc + Gmail draft                      |
+| `stwórz post`                   | Canva design + treść                                |
 
 ---
 
 ## Zasady
 
-1. **Zawsze aktualizuj Notion CRM** po każdej akcji na leadzie
-2. **Nigdy nie wysyłaj maili** bez potwierdzenia użytkownika (chyba że w trybie auto)
-3. **Loguj wszystko** — każda akcja powinna być zapisana w Notion
-4. **Personalizuj komunikację** — używaj danych z enrichmentu
-5. **Respektuj limity** — max 50 maili/dzień, 8s delay między mailami
-6. **RODO** — zawsze dołączaj link do wypisania się
-7. **Raportuj wyniki** — po każdej operacji pokaż podsumowanie
-
----
-
-## Struktura projektu
-
-```
-C1/
-├── CLAUDE.md              ← Ten plik — instrukcje dla Claude
-├── files/                 ← Istniejący system acquisition (Python)
-├── ops/
-│   ├── orchestrator.py    ← Główny orkiestrator workflow'ów
-│   ├── daily_ops.py       ← Codzienny automat operacyjny
-│   └── workflows/
-│       ├── lead_gen.py    ← Workflow: generowanie leadów
-│       ├── outreach.py    ← Workflow: outreach i follow-upy
-│       ├── crm_sync.py    ← Workflow: synchronizacja CRM
-│       ├── content.py     ← Workflow: tworzenie treści
-│       ├── meetings.py    ← Workflow: zarządzanie spotkaniami
-│       ├── reporting.py   ← Workflow: raportowanie KPI
-│       └── market_intel.py← Workflow: wywiad rynkowy
-└── .claude/
-    └── settings.json      ← Konfiguracja Claude Code
-```
+1. **Zawsze aktualizuj Notion CRM** po każdej akcji — Pipeline + Kontakty + Outreach
+2. **Drafty przed wysyłką** — tworz drafty w Gmail, nie wysyłaj bez zatwierdzenia
+3. **Max 50 maili/dzień**, 8s delay między kolejnymi
+4. **Personalizuj** — używaj danych z Apollo/Bigdata do personalizacji
+5. **RODO** — unsubscribe link w każdym mailu
+6. **Loguj w Outreach** — każdy wysłany mail = wpis w bazie Outreach
+7. **Scoring**: business email +15, name +10, company +10, LinkedIn +10, CEO/Founder +20, C-suite +15, company 10-200 +15, tech match +5 each

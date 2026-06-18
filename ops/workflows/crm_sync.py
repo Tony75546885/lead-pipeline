@@ -1,28 +1,35 @@
 """
-CRM Sync Workflow — synchronizacja stanu między Gmail, Calendar, i Notion CRM
+CRM Sync Workflow — synchronizacja Gmail ↔ Calendar ↔ Notion CRM
 
 Utrzymuje Notion CRM jako single source of truth.
+
+Notion databases:
+- Pipeline: collection://7b716879-9481-42a1-835e-9ebb8d893ace
+- Kontakty: collection://41489d85-cc78-498a-affa-cea4450166a0
+- Outreach: collection://31677235-f40e-4e24-8e82-147e44b8503e
 """
+
+from .lead_gen import NOTION_IDS
 
 WORKFLOW = {
     "name": "CRM Sync",
-    "trigger": "Część daily_review lub na żądanie",
     "steps": [
         {
             "step": 1,
             "name": "Skanuj Gmail za odpowiedziami",
             "mcp_tool": "mcp__gmail__search_threads",
+            "query": "is:unread newer_than:1d",
             "logic": """
-                Szukaj wiadomości: 'in:inbox is:unread'
-                Dla każdego threadsa:
-                1. Sprawdź czy nadawca jest w Notion CRM
-                2. Jeśli tak → zaktualizuj status na 'replied'
-                3. Oznacz jako przeczytany
-                4. Sklasyfikuj odpowiedź:
-                   - Pozytywna (zainteresowany) → status 'replied', notatka
-                   - Negatywna (nie teraz) → status 'lost', notatka
-                   - Pytanie → status 'replied', notatka z pytaniem
-                   - Bounce/OOO → status 'bounced'
+                Dla każdego threada:
+                1. Sprawdź czy nadawca jest w Kontakty (po Email)
+                2. Jeśli tak:
+                   - Pipeline: Etap → 'Replied'
+                   - Outreach: Status → 'Odpisano'
+                3. Sklasyfikuj odpowiedź:
+                   - Pozytywna → Pipeline.Nastepny krok = 'Umówić spotkanie'
+                   - Negatywna → Pipeline.Etap = 'Lost'
+                   - Pytanie → Pipeline.Nastepny krok = 'Odpowiedzieć na pytanie'
+                   - Bounce → Pipeline.Etap = 'Lost', Outreach.Status = 'Bounce'
             """,
         },
         {
@@ -30,37 +37,32 @@ WORKFLOW = {
             "name": "Sync spotkań z Calendar",
             "mcp_tool": "mcp__calendar__list_events",
             "logic": """
-                Pobierz spotkania z ostatnich 7 dni i nadchodzące.
-                Dla każdego spotkania:
-                1. Sprawdź czy uczestnik jest w CRM
-                2. Jeśli tak → zaktualizuj status na 'meeting_scheduled'
-                3. Dodaj notatkę ze spotkania jeśli już się odbyło
+                Pobierz spotkania z ostatnich 7 dni + nadchodzące.
+                Dla spotkań z leadami:
+                - Pipeline: Etap → 'Meeting'
+                - Dodaj notatkę o spotkaniu
             """,
         },
         {
             "step": 3,
-            "name": "Sprawdź Zoom za nagraniami",
+            "name": "Sprawdź Zoom nagrania",
             "mcp_tool": "mcp__zoom__recordings_list",
             "logic": """
                 Pobierz nagrania z ostatnich 7 dni.
-                Dla każdego nagrania:
-                1. Powiąż z leadem w CRM
-                2. Pobierz transkrypcję jeśli dostępna
-                3. Dodaj podsumowanie do notatek w Notion
+                Powiąż z leadem → dodaj podsumowanie do Pipeline.Notatki
             """,
         },
         {
             "step": 4,
             "name": "Pipeline health check",
             "logic": """
-                Policz leady na każdym etapie:
-                - new, qualified, contacted, replied, meeting_scheduled,
-                  proposal_sent, converted, lost
+                Policz leady per Etap:
+                New | Qualifying | Contacted | Replied | Meeting | Negotiation | Won | Lost
 
-                Flagi:
-                - Jeśli < 20 qualified → uruchom lead_gen
-                - Jeśli > 10 contacted bez follow-up > 3 dni → uruchom follow_up
-                - Jeśli replied bez akcji > 2 dni → alert
+                Alerty:
+                - pipeline < 20 Qualifying/New → uruchom lead_gen
+                - > 10 Contacted bez follow-up > 3 dni → uruchom follow_up
+                - Replied bez akcji > 2 dni → pokaż alert
             """,
         },
     ],
@@ -71,14 +73,16 @@ GMAIL_REPLY_CLASSIFICATION = {
         "interested", "zainteresowany", "chętnie", "sounds good",
         "let's talk", "porozmawiajmy", "tell me more", "powiedzcie więcej",
         "when can we", "kiedy możemy", "send me", "wyślij mi",
+        "sure", "jasne", "ok", "tak",
     ],
     "negative_signals": [
         "not interested", "nie jestem zainteresowany", "no thanks",
         "unsubscribe", "wypisz", "remove me", "stop",
-        "nie teraz", "not now", "maybe later",
+        "nie teraz", "not now", "maybe later", "nie potrzebujemy",
     ],
     "bounce_signals": [
         "delivery failed", "undeliverable", "mailbox full",
         "out of office", "automatic reply", "auto-reply",
+        "nie istnieje", "does not exist",
     ],
 }

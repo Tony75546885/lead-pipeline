@@ -8,19 +8,42 @@
       "mcp__gmail__search_threads",
       "mcp__gmail__list_drafts",
       "mcp__gmail__list_labels",
+      "mcp__gmail__get_thread",
+      "mcp__gmail__create_draft",
       "mcp__calendar__list_events",
       "mcp__calendar__list_calendars",
+      "mcp__calendar__suggest_time",
       "mcp__apollo__contacts_search",
       "mcp__apollo__mixed_people_api_search",
       "mcp__apollo__organizations_enrich",
+      "mcp__apollo__organizations_bulk_enrich",
+      "mcp__apollo__organizations_job_postings",
+      "mcp__apollo__people_match",
       "mcp__apollo__usage_stats_credit_usage_stats",
       "mcp__bigdata__*",
       "mcp__zoom__search_meetings",
       "mcp__zoom__recordings_list",
+      "mcp__zoom__get_recording_resource",
       "mcp__gdrive__search_files",
       "mcp__gdrive__list_recent_files",
-      "mcp__gdrive__read_file_content"
+      "mcp__gdrive__read_file_content",
+      "mcp__canva__search_designs",
+      "mcp__canva__get_design",
+      "mcp__wix__ListWixSites"
     ],
     "deny": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '## C1 Auto-Ops aktywne\n\nPrzeczytaj CLAUDE.md i wykonaj codzienny przegląd:\n1. Sprawdź Gmail (nowe maile)\n2. Sprawdź Calendar (dzisiejsze spotkania)\n3. Sprawdź Pipeline w Notion (status leadów)\n4. Zidentyfikuj akcje do podjęcia\n5. Podsumuj stan biznesu\n\nUżyj prawdziwych Notion collection IDs z CLAUDE.md.'"
+          }
+        ]
+      }
+    ]
   }
 }
