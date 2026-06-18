@@ -1,24 +1,42 @@
-# C1 Configuration
-# Copy this file and fill in your values
-# Or use .env for sensitive keys (see .env.example)
+# C1 Configuration — Botbridge AI Automation
+# Sensitive keys in .env (see .env.example)
 
 db_path: data/leads.db
+
+# --- Company ---
+sender_name: "Botbridge"
+sender_company: "Botbridge"
+value_proposition: "Wdrażamy AI w Twojej firmie w 2 tygodnie — chatboty, automatyzacja procesów, asystenci AI. 40% oszczędności czasu, -50% kosztów obsługi klienta."
 
 # --- Target ---
 default_niche: "SaaS"
 target_titles:
   - CEO
   - Founder
-  - Head of Marketing
-  - CMO
   - Co-Founder
+  - CTO
+  - COO
+  - Head of Operations
 target_location: "Poland"
+target_company_size: "11,200"
+target_industries:
+  - SaaS
+  - Ecommerce
+  - Agencja
+  - B2B
+  - Fintech
 
 # --- Qualification ---
 min_qualification_score: 40  # 0–100
 
 # --- Outreach ---
-outreach_delay_seconds: 8    # seconds between emails (avoid spam filters)
+outreach_delay_seconds: 8
+max_emails_per_day: 50
+max_follow_ups: 3
+follow_up_intervals_days:
+  - 3
+  - 5
+  - 7
 
 # --- Scraping ---
 scrape_delay:
@@ -26,9 +44,20 @@ scrape_delay:
   - 4.0
 
 # --- LinkedIn provider ---
-# Options: mock | proxycurl | apollo
-linkedin_provider: mock
+linkedin_provider: apollo
 
 # --- SMTP ---
 smtp_host: smtp.gmail.com
 smtp_port: 587
+
+# --- Pricing (PLN) ---
+pricing:
+  starter:
+    monthly: 2500
+    setup: 5000
+  professional:
+    monthly: 5000
+    setup: 10000
+  enterprise:
+    monthly: 10000
+    setup: 20000
