@@ -2,9 +2,39 @@
 
 ## Misja
 
-System C1 automatycznie pozyskuje klientów B2B dla firmy oferującej usługi IT/Software.
+System C1 automatycznie pozyskuje klientów B2B dla **Botbridge** — firmy wdrażającej
+AI automation (chatboty, automatyzacja procesów, AI asystenci) dla firm 10-200 osób.
 Claude pełni rolę **AI Business Operator** — prowadzi pipeline sprzedażowy,
 zarządza komunikacją, tworzy materiały marketingowe i raportuje wyniki.
+
+## Firma: Botbridge
+
+**Tagline:** AI automation dla firm, które chcą rosnąć szybciej
+
+**Value Proposition:** Wdrażamy AI w Twojej firmie w 2 tygodnie — chatboty,
+automatyzacja procesów, asystenci AI. Nasi klienci oszczędzają średnio 40% czasu
+na powtarzalnych zadaniach i redukują koszty obsługi klienta o połowę.
+
+**Usługi:**
+1. **AI Chatbot** — 24/7 na stronie/messenger/WhatsApp. 80% zapytań auto. Wdrożenie 5-10 dni.
+2. **Process Automation** — faktury, raporty, onboarding, email. +60-70% produktywność.
+3. **AI Sales Assistant** — oferty, follow-upy, kwalifikacja leadów. +35% konwersja.
+4. **Custom AI Integration** — integracja z CRM/ERP/ecommerce. 91% ROI w 6 mies.
+
+**Cennik:**
+- Starter: 2 500 PLN/mies + 5 000 PLN setup (chatbot + 1 automatyzacja)
+- Professional: 5 000 PLN/mies + 10 000 PLN setup (chatbot + 3 auto + AI Sales)
+- Enterprise: 10 000+ PLN/mies + 20 000 PLN setup (unlimited, custom AI, SLA)
+
+**Target:** CEO/Founder/CTO w firmach 10-200 osób, Polska.
+Branże: SaaS, Ecommerce, Agencje, B2B, Fintech.
+
+**Case studies do outreachu:**
+- Ecommerce: AI chatbot przejął 78% zapytań, czas odpowiedzi 4h→30s, NPS +22
+- SaaS: AI onboarding +35% konwersja trial→paid, +120K PLN MRR/rok
+- Agencja: automatyczne raporty, -20h/tydzień, zero błędów
+
+Pełny profil: `ops/business_profile.py`
 
 ---
 

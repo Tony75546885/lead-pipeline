@@ -74,7 +74,10 @@ WORKFLOW = {
     ],
 }
 
-COLD_EMAIL_PROMPT_PL = """Napisz cold email B2B po polsku dla firmy IT/Software.
+COLD_EMAIL_PROMPT_PL = """Napisz cold email B2B po polsku dla Botbridge.
+
+Botbridge wdraża AI automation (chatboty, automatyzacja procesów, AI asystenci)
+dla firm 10-200 osób. Wdrożenie w 2 tygodnie.
 
 Lead:
 - Imię: {name}
@@ -85,12 +88,18 @@ Lead:
 - Technologie: {technologies}
 - Wielkość firmy: {company_size}
 
+Case study do wykorzystania (wybierz najbardziej pasujący):
+- Ecommerce: AI chatbot przejął 78% zapytań, czas odpowiedzi z 4h do 30s
+- SaaS: +35% konwersja trial→paid dzięki AI onboarding i follow-upom
+- Agencja: -20h/tydzień na raportowaniu, raporty generowane w 2 minuty
+
 Zasady:
 - Max 5 zdań
-- Zacznij od spersonalizowanego nawiązania do firmy lub roli
+- Zacznij od spersonalizowanego nawiązania do firmy lub roli leada
+- Wpleć konkretną statystykę z case study pasującego do branży
 - Jasna propozycja wartości (efekt, nie produkt)
-- Konkretne CTA (zaproponuj 15-minutową rozmowę)
-- Zero corporate speak
+- Konkretne CTA (zaproponuj 15-minutową rozmowę, podaj dzień)
+- Zero corporate speak, zero "Mam nadzieję..."
 - Ton: bezpośredni, pewny siebie, profesjonalny
 
 Format:
@@ -99,7 +108,10 @@ TEMAT: <temat>
 <treść>
 """
 
-COLD_EMAIL_PROMPT_EN = """Write a B2B cold email in English for an IT/Software company.
+COLD_EMAIL_PROMPT_EN = """Write a B2B cold email in English for Botbridge.
+
+Botbridge deploys AI automation (chatbots, process automation, AI assistants)
+for companies with 10-200 employees. Deployment in 2 weeks.
 
 Lead:
 - Name: {name}
@@ -110,12 +122,18 @@ Lead:
 - Technologies: {technologies}
 - Company size: {company_size}
 
+Case studies to reference (pick the most relevant):
+- Ecommerce: AI chatbot handled 78% of queries, response time from 4h to 30s
+- SaaS: +35% trial-to-paid conversion with AI onboarding and follow-ups
+- Agency: -20h/week on reporting, reports generated in 2 minutes
+
 Rules:
 - Max 5 sentences
 - Start with personalized reference to their company or role
+- Include a specific stat from a relevant case study
 - Clear value proposition (outcome, not product)
-- Specific CTA (suggest a 15-minute call)
-- No corporate speak
+- Specific CTA (suggest a 15-minute call, name a day)
+- No corporate speak, no "I hope this finds you well"
 - Tone: direct, confident, professional
 
 Format:
