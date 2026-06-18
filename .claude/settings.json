@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "mcp__notion__*",
+      "mcp__gmail__search_threads",
+      "mcp__gmail__list_drafts",
+      "mcp__gmail__list_labels",
+      "mcp__calendar__list_events",
+      "mcp__calendar__list_calendars",
+      "mcp__apollo__contacts_search",
+      "mcp__apollo__mixed_people_api_search",
+      "mcp__apollo__organizations_enrich",
+      "mcp__apollo__usage_stats_credit_usage_stats",
+      "mcp__bigdata__*",
+      "mcp__zoom__search_meetings",
+      "mcp__zoom__recordings_list",
+      "mcp__gdrive__search_files",
+      "mcp__gdrive__list_recent_files",
+      "mcp__gdrive__read_file_content"
+    ],
+    "deny": []
+  }
+}
