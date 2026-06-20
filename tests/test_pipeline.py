@@ -1,13 +1,15 @@
 """
-Tests for C1 — run with: pytest
+Lead Pipeline — test suite. Run with: pytest tests/ -v
 """
 import pytest
 from src.storage.models import Lead, LeadStatus
 from src.storage.lead_store import LeadStore
 from src.utils.enricher import LeadEnricher
+from src.scrapers.web_scraper import WebScraper
 
 
 # --- Model tests ---
+
 
 def test_lead_full_name():
     lead = Lead(first_name="Jan", last_name="Kowalski")
@@ -88,3 +90,34 @@ def test_scorer_max_100():
     )
     scored = enricher.enrich(lead)
     assert scored.score <= 100
+
+
+# --- Web scraper tests ---
+
+def test_junk_email_filter():
+    scraper = WebScraper(config={})
+    assert scraper._is_junk_email("support@company.com") is True
+    assert scraper._is_junk_email("noreply@service.io") is True
+    assert scraper._is_junk_email("jan.kowalski@firma.pl") is False
+
+def test_junk_email_rejects_image_extensions():
+    scraper = WebScraper(config={})
+    assert scraper._is_junk_email("icon@site.png") is True
+
+def test_domain_extraction():
+    from src.utils.enricher import LeadEnricher
+    assert LeadEnricher._extract_domain("https://www.example.com/page") == "example.com"
+    assert LeadEnricher._extract_domain("http://startup.pl") == "startup.pl"
+
+
+# --- Lead display ---
+
+def test_lead_display_with_full_info():
+    lead = Lead(first_name="Anna", last_name="N", title="CEO", company="TechCo")
+    assert "Anna N" in lead.display
+    assert "CEO" in lead.display
+    assert "TechCo" in lead.display
+
+def test_lead_display_email_fallback():
+    lead = Lead(email="test@example.com")
+    assert lead.display == "test@example.com"

@@ -26,7 +26,7 @@ def get_logger(name: str) -> logging.Logger:
 
     # File handler
     os.makedirs("logs", exist_ok=True)
-    log_file = f"logs/c1_{datetime.now().strftime('%Y-%m-%d')}.log"
+    log_file = f"logs/lead_pipeline_{datetime.now().strftime('%Y-%m-%d')}.log"
     fh = logging.FileHandler(log_file, encoding="utf-8")
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(fmt)

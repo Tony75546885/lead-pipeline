@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
-C1 - Automated Client Acquisition System
+Lead Pipeline — Automated B2B Client Acquisition
 """
 import argparse
-import sys
 from src.pipeline import AcquisitionPipeline
 from src.utils.logger import get_logger
 from src.utils.config import load_config
@@ -13,7 +12,7 @@ logger = get_logger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="C1 - Automated Client Acquisition System",
+        description="Lead Pipeline — Automated B2B Client Acquisition",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

@@ -5,8 +5,8 @@ import re
 from typing import Optional
 
 import requests
-from ..storage.models import Lead
-from ..utils.logger import get_logger
+from src.storage.models import Lead
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

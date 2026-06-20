@@ -39,23 +39,29 @@ python main.py report --last 7
 ## Architecture
 
 ```
-main.py                  # CLI entry point
+main.py                      # CLI entry point
 src/
-  pipeline.py            # Orchestrates the full workflow
-  web_scraper.py         # Extracts emails from websites
-  linkedin_scraper.py    # Finds decision-makers on LinkedIn
-  message_generator.py   # Personalized cold emails via Claude API
-  email_sender.py        # SMTP sender with tracking pixel
-  models.py              # Lead dataclass + LeadStatus enum
-  lead_store.py          # SQLite persistence + deduplication
-  enricher.py            # Lead enrichment + scoring (0-100)
-  config.py              # YAML + .env config loader
-  logger.py              # File + console logging
-  reporter.py            # Funnel analytics
+  pipeline.py                # Orchestrates the full workflow
+  scrapers/
+    web_scraper.py           # Extracts emails from websites
+    linkedin_scraper.py      # LinkedIn via Proxycurl / Apollo / mock
+  outreach/
+    message_generator.py     # Personalized cold emails via Claude API
+    email_sender.py          # SMTP sender with tracking pixel
+  storage/
+    models.py                # Lead dataclass + LeadStatus enum
+    lead_store.py            # SQLite persistence + deduplication
+  utils/
+    enricher.py              # Lead enrichment + scoring (0-100)
+    config.py                # YAML + .env config loader
+    logger.py                # File + console logging
+    reporter.py              # Funnel analytics
 config/
-  config.yaml            # Non-sensitive configuration
+  config.yaml                # Non-sensitive configuration
 tests/
-  test_pipeline.py       # pytest test suite
+  test_pipeline.py           # pytest test suite
+.github/
+  workflows/ci.yml           # GitHub Actions CI (Python 3.11-3.13)
 ```
 
 ## LinkedIn Providers

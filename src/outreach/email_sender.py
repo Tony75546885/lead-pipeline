@@ -8,8 +8,8 @@ from email.mime.text import MIMEText
 from datetime import datetime
 from typing import Optional
 
-from ..storage.models import Lead
-from ..utils.logger import get_logger
+from src.storage.models import Lead
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

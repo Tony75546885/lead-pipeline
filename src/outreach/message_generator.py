@@ -2,8 +2,8 @@
 Personalized outreach message generator using Claude API
 """
 import anthropic
-from ..storage.models import Lead
-from ..utils.logger import get_logger
+from src.storage.models import Lead
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -32,7 +32,7 @@ class MessageGenerator:
         prompt = self._build_prompt(lead)
 
         message = self.client.messages.create(
-            model="claude-opus-4-5",
+            model="claude-haiku-4-5-20251001",
             max_tokens=400,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],

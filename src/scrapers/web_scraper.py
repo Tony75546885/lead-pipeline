@@ -10,8 +10,8 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 
-from ..storage.models import Lead
-from ..utils.logger import get_logger
+from src.storage.models import Lead
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

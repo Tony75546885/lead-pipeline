@@ -138,7 +138,7 @@ class AcquisitionPipeline:
 
     def _print_summary(self, raw, new, qualified):
         print(f"\n{'='*50}")
-        print(f"  C1 Acquisition Run Summary")
+        print(f"  Lead Pipeline — Run Summary")
         print(f"{'='*50}")
         print(f"  Raw leads collected : {len(raw)}")
         print(f"  New (after dedup)   : {len(new)}")

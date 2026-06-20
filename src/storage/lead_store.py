@@ -7,8 +7,8 @@ from datetime import datetime
 from typing import Optional
 from contextlib import contextmanager
 
-from .models import Lead, LeadStatus
-from ..utils.logger import get_logger
+from src.storage.models import Lead, LeadStatus
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -109,25 +109,33 @@ class LeadStore:
 
     def get_stats(self, since: Optional[datetime] = None) -> dict:
         with self._conn() as conn:
-            base = "SELECT status, COUNT(*) as cnt FROM leads"
             if since:
-                base += f" WHERE created_at >= '{since.isoformat()}'"
-            base += " GROUP BY status"
-            rows = conn.execute(base).fetchall()
+                rows = conn.execute(
+                    "SELECT status, COUNT(*) as cnt FROM leads WHERE created_at >= ? GROUP BY status",
+                    (since.isoformat(),),
+                ).fetchall()
+                total = conn.execute(
+                    "SELECT COUNT(*) as c FROM leads WHERE created_at >= ?",
+                    (since.isoformat(),),
+                ).fetchone()["c"]
+            else:
+                rows = conn.execute(
+                    "SELECT status, COUNT(*) as cnt FROM leads GROUP BY status"
+                ).fetchall()
+                total = conn.execute("SELECT COUNT(*) as c FROM leads").fetchone()["c"]
             stats = {r["status"]: r["cnt"] for r in rows}
-            total = conn.execute(
-                "SELECT COUNT(*) as c FROM leads" + (f" WHERE created_at >= '{since.isoformat()}'" if since else "")
-            ).fetchone()["c"]
             stats["total"] = total
             return stats
 
     def export_csv(self, path: str, status: Optional[LeadStatus] = None):
         import csv
         with self._conn() as conn:
-            q = "SELECT * FROM leads"
             if status:
-                q += f" WHERE status = '{status.value}'"
-            rows = conn.execute(q).fetchall()
+                rows = conn.execute(
+                    "SELECT * FROM leads WHERE status = ?", (status.value,)
+                ).fetchall()
+            else:
+                rows = conn.execute("SELECT * FROM leads").fetchall()
         with open(path, "w", newline="", encoding="utf-8") as f:
             if rows:
                 writer = csv.DictWriter(f, fieldnames=rows[0].keys())
