@@ -1,4 +1,4 @@
-# C1 — Automated Client Acquisition System
+# Lead Pipeline — Automated B2B Client Acquisition
 
 Automates B2B lead generation and outreach: scrapes leads, enriches them with company data, scores by fit, generates personalized cold emails using AI, and sends them via SMTP.
 
@@ -41,21 +41,17 @@ python main.py report --last 7
 ```
 main.py                  # CLI entry point
 src/
-  pipeline.py            # Orchestrates everything
-  scrapers/
-    web_scraper.py       # Extracts emails from websites
-    linkedin_scraper.py  # Finds decision-makers on LinkedIn
-  outreach/
-    message_generator.py # Generates personalized emails via Claude
-    email_sender.py      # SMTP sender with tracking
-  storage/
-    models.py            # Lead dataclass + LeadStatus enum
-    lead_store.py        # SQLite persistence + dedup
-  utils/
-    enricher.py          # Enriches leads + scoring (0–100)
-    config.py            # YAML + .env config loader
-    logger.py            # File + console logging
-    reporter.py          # Funnel analytics
+  pipeline.py            # Orchestrates the full workflow
+  web_scraper.py         # Extracts emails from websites
+  linkedin_scraper.py    # Finds decision-makers on LinkedIn
+  message_generator.py   # Personalized cold emails via Claude API
+  email_sender.py        # SMTP sender with tracking pixel
+  models.py              # Lead dataclass + LeadStatus enum
+  lead_store.py          # SQLite persistence + deduplication
+  enricher.py            # Lead enrichment + scoring (0-100)
+  config.py              # YAML + .env config loader
+  logger.py              # File + console logging
+  reporter.py            # Funnel analytics
 config/
   config.yaml            # Non-sensitive configuration
 tests/
