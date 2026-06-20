@@ -2,6 +2,9 @@
 
 Automates B2B lead generation and outreach: scrapes leads, enriches them with company data, scores by fit, generates personalized cold emails using AI, and sends them via SMTP.
 
+[![CI](https://github.com/Tony75546885/lead-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Tony75546885/lead-pipeline/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 ## Features
 
 - **Multi-source lead collection** — web scraping + LinkedIn (via Proxycurl / Apollo / mock)
